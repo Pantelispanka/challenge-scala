@@ -24,8 +24,6 @@ class RoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteTest{
 //        responseAs[String] shouldEqual  """{"status":404, "error":"Dataset not found"}"""
 //      }
 //    }
-
-
-  }
+//  }
 
 }
