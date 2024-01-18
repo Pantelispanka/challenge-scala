@@ -1,19 +1,26 @@
 package com.gwi.http
 
+import akka.NotUsed
+import akka.actor.Cancellable
 import akka.actor.typed.scaladsl.AskPattern.{Askable, _}
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.StatusCodes.{Created, NotFound, OK}
+import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.server.{Directives, Route}
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import com.gwi.actors.DatasetActor.DatasetMessage
 import com.gwi.actors.DatasetActor.DatasetMessage.GetDataset
 import com.gwi.actors.TaskManagerActor.MasterMessage
 import com.gwi.actors.TaskManagerActor.MasterMessage._
 import com.gwi.domain.ServiceMarshaller.errorJsonFormat
-import com.gwi.domain.{Dataset, ErrorMessage, HttpMarshaller, Task, Tasks}
+import com.gwi.domain._
+import spray.json.enrichAny
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
+
+
 
 class Routes(taskActor: ActorRef[MasterMessage], datasetActor: ActorRef[DatasetMessage])(implicit val system: ActorSystem[_]) extends Directives with HttpMarshaller {
 
@@ -37,6 +44,12 @@ class Routes(taskActor: ActorRef[MasterMessage], datasetActor: ActorRef[DatasetM
 
   def getDataset(result:String): Future[Option[Dataset]] = {
     datasetActor.ask(GetDataset(result, _)).mapTo[Option[Dataset]]
+  }
+
+  def getTaskAsSource(taskId: String): Source[Option[Task], Cancellable] = {
+    Source
+      .tick(2.seconds, 2.seconds, NotUsed)
+      .flatMapConcat(_ => Source.future(getTask(taskId)))
   }
 
 
@@ -73,12 +86,32 @@ class Routes(taskActor: ActorRef[MasterMessage], datasetActor: ActorRef[DatasetM
   }
 
   protected val getTaskRoute: Route = {
+
+    import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling._
+
     pathPrefix(service / version / "task" / Segment) { id ⇒
       get {
         // GET csv-parser/v1/task/:task
         pathEndOrSingleSlash {
           onSuccess(getTask(id)) { task =>
-            if (task.isDefined)  complete(OK, task)
+
+
+            if (task.isDefined){
+
+              if (task.get.status.get == TaskStatus.RUNNING || task.get.status.get == TaskStatus.SCHEDULED){
+
+                complete(
+                  OK,
+                  getTaskAsSource(task.get.id.get)
+                    .map(task => ServerSentEvent(task.toJson.toString()))
+                    .keepAlive(maxIdle = 1.second, () => ServerSentEvent.heartbeat)
+                )
+
+              } else{
+                complete(OK, task)
+              }
+
+            }
             else complete(NotFound, ErrorMessage(NotFound.intValue, "Task not found"))
           }
         }
