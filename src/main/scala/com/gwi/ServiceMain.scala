@@ -5,35 +5,11 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Route, ExceptionHandler => _}
 import com.gwi.actors.DatasetActor.datasetActor
-import com.gwi.actors.TaskManagerActor
 import com.gwi.actors.TaskManagerActor.taskManagerActor
-import com.gwi.domain.Task
 import com.gwi.http.Routes
 import com.typesafe.config.ConfigFactory
 
-import scala.collection.immutable.Queue
 import scala.util.{Failure, Success}
-
-
-//object ServiceMain extends App {
-//
-//  val config = ConfigFactory.load("gwiapp.conf")
-//  val host = config.getString("host")
-//  val port = config.getInt("port")
-//
-////  implicit val system: ActorSystem = ActorSystem()
-////  implicit val ec: ExecutionContextExecutor = system.dispatcher
-//
-//  val t = config.getString("timeout")
-//  val d = Duration(t)
-//  val timeout = FiniteDuration(d.length, d.unit)
-//
-//  val api = new TaskRoutes(system, timeout).routes // the RestApi provides a Route
-//
-//  val bindingFuture: Future[ServerBinding] = Http().bindAndHandle(api, host, port) // starts the HTTP server
-//
-//}
-
 
 object ServiceMain{
 

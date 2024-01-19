@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory
 import java.util.UUID.randomUUID
 import scala.collection.immutable
 import scala.collection.immutable.Queue
-import scala.sys.error
 
 
 object TaskManagerActor {
