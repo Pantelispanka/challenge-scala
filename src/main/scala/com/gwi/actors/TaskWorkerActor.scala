@@ -34,7 +34,7 @@ object TaskWorkerActor {
         Behaviors.same
       case WorkerStartTask(task, ref)=>
 
-        log.info("Start processing")
+        log.debug("Start processing")
         val start = System.currentTimeMillis()
         ref ! TaskStartedResponse(task)
 

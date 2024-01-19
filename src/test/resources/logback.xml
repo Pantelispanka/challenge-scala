@@ -21,4 +21,14 @@
         <appender-ref ref="ASYNC"/>
     </root>
 
+
+    <logger name="akka" level="DEBUG" />
+
+    <logger name="com.gwi" level="DEBUG" />
+
+    <root level="DEBUG">
+        <appender-ref ref="SYNC"/>
+    </root>
+
+
 </configuration>

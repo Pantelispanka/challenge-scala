@@ -21,7 +21,7 @@ class TaskManagerActorSpec  extends ScalaTestWithActorTestKit with AnyWordSpecLi
 
     "Test variables through logging" in {
       val probe = testKit.createTestProbe[Task]()
-      LoggingTestKit.info(messageIncludes = "Queue size is: 0").expect {
+      LoggingTestKit.debug(messageIncludes = "Queue size is: 0").expect {
         val task = Task(Some("Id"), Some(TaskStatus.SCHEDULED), "1.csv", Some(10), Some(12.12), Some("result"))
         taskActor ! StartTask(task, probe.ref)
       }
@@ -56,7 +56,7 @@ class TaskManagerActorSpec  extends ScalaTestWithActorTestKit with AnyWordSpecLi
 
     "Check queue size" in {
       val probe = testKit.createTestProbe[Task]()
-      LoggingTestKit.info(messageIncludes = "Queue size is: 4").expect {
+      LoggingTestKit.debug(messageIncludes = "Queue size is: 4").expect {
         val task = Task(Some("Id"), Some(TaskStatus.SCHEDULED), "1.csv", Some(10), Some(12.12), Some("result"))
         taskActor ! StartTask(task, probe.ref)
       }
@@ -81,7 +81,7 @@ class TaskManagerActorSpec  extends ScalaTestWithActorTestKit with AnyWordSpecLi
         assert(totalRunning == 2)
         var task = t.get.tasks.last
 
-        LoggingTestKit.info(messageIncludes = "Canceled a task. Queue length now is 4").expect{
+        LoggingTestKit.debug(messageIncludes = "Canceled a task. Queue length now is 4").expect{
           taskActor ! StopTask(task.id.get, probe.ref)
         }
 

@@ -45,9 +45,6 @@ object TaskManagerActor {
 
   final case class TasksStored(tasks: immutable.Seq[Task])
 
-  var workersRunning: Seq[String] = immutable.Seq.empty[String]
-  var workersAvailable: Seq[String] = immutable.Seq.empty[String]
-  var workersQueue: Queue[String] = immutable.Queue.empty[String]
 
   def taskManagerActor(
                         maxWorkersUp: Int = 2,
@@ -65,7 +62,7 @@ object TaskManagerActor {
         Behaviors.same
 
       case StartTask(task, ref) =>
-        log.info(s"Queue size is: ${queue.size}")
+        log.debug(s"Queue size is: ${queue.size}")
         val id = randomUUID().toString
         val taskSceduled = task.copy(id = Some(id), status = Some(TaskStatus.SCHEDULED))
         val ts = tasksStored + (id -> taskSceduled)
@@ -116,7 +113,7 @@ object TaskManagerActor {
           wks = workers
           ts = tasksStored + (taskFinished.id.get -> taskFinished)
         }
-        log.info(s"Canceled a task. Queue length now is ${queueNew.size}")
+        log.debug(s"Canceled a task. Queue length now is ${queueNew.size}")
         actor ! success(taskFinished)
         taskManagerActor(2, queueNew, ts, wks)
 
