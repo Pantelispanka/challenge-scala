@@ -78,7 +78,7 @@ object TaskManagerActor {
         else{
           newQueue = newQueue
         }
-        taskManagerActor(2, newQueue, ts, wks)
+        taskManagerActor(maxWorkersUp, newQueue, ts, wks)
 
       case StopTask(taskId, actor) =>
         var t = tasksStored.get(taskId)
@@ -114,7 +114,7 @@ object TaskManagerActor {
         }
         log.debug(s"Canceled a task. Queue length now is ${queueNew.size}")
         actor ! success(taskFinished)
-        taskManagerActor(2, queueNew, ts, wks)
+        taskManagerActor(maxWorkersUp, queueNew, ts, wks)
 
       case GetTask(taskId, actor) =>
         val taskFound: Option[Task] = tasksStored.get(taskId)
@@ -135,7 +135,7 @@ object TaskManagerActor {
         val ts = tasksStored + (taskRunning.id.get -> taskRunning)
         val nowQueue = queue
         val wks = workers
-        taskManagerActor(2, nowQueue, ts, wks)
+        taskManagerActor(maxWorkersUp, nowQueue, ts, wks)
 
       case TaskFailedResponse(taskId) =>
         val taskFound: Option[Task] = tasksStored.get(taskId)
@@ -143,7 +143,7 @@ object TaskManagerActor {
         val ts = tasksStored + (taskFound.get.id.get -> taskFailed)
         val nowQueue = queue
         val wks = workers.removed(taskFound.get.id.get)
-        taskManagerActor(2, nowQueue, ts, wks)
+        taskManagerActor(maxWorkersUp, nowQueue, ts, wks)
 
       case TaskFinishedResponse(taskId, result, count, avg) =>
         var t = tasksStored.get(taskId)
@@ -165,7 +165,7 @@ object TaskManagerActor {
             wks = workers + (task.id.get -> taskWorker)
           }
         }
-        taskManagerActor(2, nowQueue, ts, wks)
+        taskManagerActor(maxWorkersUp, nowQueue, ts, wks)
     }
   })
 
